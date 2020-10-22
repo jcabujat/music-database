@@ -1,6 +1,5 @@
 package com.jcabujat.model;
 
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +51,27 @@ public class DataSource {
             COLUMN_ALBUM_ARTIST + " = " + TABLE_ARTISTS + "." + COLUMN_ARTIST_ID + " WHERE " + TABLE_SONGS + "." +
             COLUMN_SONG_TITLE + " = \"";
 
+    public static final String VIEW_ARTIST_SONG = "artist_song";
+
+    // CREATE VIEW IF NOT EXISTS artist_song AS SELECT artists.name, albums.name AS album,
+    // songs.track, songs.title FROM songs INNER JOIN albums ON songs.album = albums._id
+    // INNER JOIN artists ON albums.artist = artists._id ORDER BY artists.name, albums.name, songs.track
+
+    public static final String CREATE_ARTIST_SONG_VIEW = "CREATE VIEW IF NOT EXISTS " + VIEW_ARTIST_SONG +
+            " AS SELECT " + TABLE_ARTISTS + "." + COLUMN_ARTIST_NAME + ", " + TABLE_ALBUMS + "." + COLUMN_ALBUM_NAME + " AS " +
+            COLUMN_SONG_ALBUM + ", " + TABLE_SONGS + "." + COLUMN_SONG_TRACK + ", " + TABLE_SONGS + "." +
+            COLUMN_SONG_TITLE + " FROM " + TABLE_SONGS + " INNER JOIN " + TABLE_ALBUMS + " ON " + TABLE_SONGS + "." +
+            COLUMN_SONG_ALBUM + " = " + TABLE_ALBUMS + "." + COLUMN_ALBUM_ID + " INNER JOIN " + TABLE_ARTISTS + " ON " +
+            TABLE_ALBUMS + "." + COLUMN_ALBUM_ARTIST + " = " + TABLE_ARTISTS + "." + COLUMN_ARTIST_ID + " ORDER BY " +
+            TABLE_ARTISTS + "." + COLUMN_ARTIST_NAME + ", " + TABLE_ALBUMS + "." + COLUMN_ALBUM_NAME + ", " +
+            TABLE_SONGS + "." + COLUMN_SONG_TRACK;
+
+//    SELECT name, album, track FROM artist_song
+//    WHERE title = "Go Your Own Way"
+
+    public static final String QUERY_SONG_INFO = "SELECT " + COLUMN_ARTIST_NAME + ", " + COLUMN_SONG_ALBUM + ", " +
+            COLUMN_SONG_TRACK + " FROM " + VIEW_ARTIST_SONG + " WHERE " + COLUMN_SONG_TITLE + " = \"";
+
     public enum ORDER_BY {
         NONE, ASC, DESC
     }
@@ -66,6 +86,7 @@ public class DataSource {
     public boolean open() {
         try {
             conn = DriverManager.getConnection(CONNECTION_STRING);
+            System.out.println(CREATE_ARTIST_SONG_VIEW);
             return true;
         } catch (SQLException e) {
             System.out.println("Couldn't connect to database: " + e.getMessage());
@@ -211,6 +232,52 @@ public class DataSource {
             return null;
         }
 
+    }
+
+    public int getRecordCount(String table) {
+        String sql = "SELECT COUNT(*) FROM " + table;
+
+        try (Statement statement = conn.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            int count = resultSet.getInt(1);
+            return count;
+        } catch (SQLException e) {
+            System.out.println("Error getting record count: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public boolean createArtistSongView() {
+        try (Statement statement = conn.createStatement()) {
+            statement.execute(CREATE_ARTIST_SONG_VIEW);
+            return true;
+        }catch (SQLException e) {
+            System.out.println("Unable to create view: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<SongArtist> querySongInfoView(String song) {
+        String sql = QUERY_SONG_INFO + song + "\"";
+
+        try (Statement statement = conn.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+
+            List<SongArtist> songArtists = new ArrayList<>();
+            while (resultSet.next()) {
+                SongArtist songArtist = new SongArtist();
+                songArtist.setArtistName(resultSet.getString(1));
+                songArtist.setAlbumName(resultSet.getString(2));
+                songArtist.setSongTrack(resultSet.getInt(3));
+                songArtists.add(songArtist);
+            }
+
+            return songArtists;
+
+        } catch (SQLException e) {
+            System.out.println("Query song view failed: " + e.getMessage());
+            return null;
+        }
     }
 
 }

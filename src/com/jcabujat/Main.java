@@ -31,13 +31,25 @@ public class Main {
 //                System.out.println(album);
 //            }
 //        }
+//
+//        List<SongArtist> songArtists = dataSource.queryArtistsBySong("Go Your Own Way", DataSource.ORDER_BY.ASC);
+//        if (songArtists != null) {
+//            for (SongArtist songArtist : songArtists) {
+//                System.out.println(songArtist.getArtistName() + ", " + songArtist.getAlbumName() + ", " + songArtist.getSongTrack());
+//            }
+//        }
+//
+//        System.out.println("Record count = " + dataSource.getRecordCount(DataSource.TABLE_ARTISTS));
 
-        List<SongArtist> songArtists = dataSource.queryArtistsBySong("Go Your Own Way", DataSource.ORDER_BY.ASC);
-        if (songArtists != null) {
+        dataSource.createArtistSongView();
+
+        List<SongArtist> songArtists = dataSource.querySongInfoView("Funnels");
+        if (!songArtists.isEmpty()) {
             for (SongArtist songArtist : songArtists) {
                 System.out.println(songArtist.getArtistName() + ", " + songArtist.getAlbumName() + ", " + songArtist.getSongTrack());
             }
         }
+
 
         dataSource.close();
     }
