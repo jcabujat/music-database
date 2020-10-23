@@ -42,18 +42,21 @@ public class Main {
 //
 //        System.out.println("Record count = " + dataSource.getRecordCount(DataSource.TABLE_ARTISTS));
 
-        dataSource.createArtistSongView();
+//        dataSource.createArtistSongView();
+//
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.println("Enter a song title: ");
+//        String title = scanner.nextLine();
+//
+//        List<SongArtist> songArtists = dataSource.querySongInfoView(title);
+//        if (!songArtists.isEmpty()) {
+//            for (SongArtist songArtist : songArtists) {
+//                System.out.println(songArtist.getArtistName() + ", " + songArtist.getAlbumName() + ", " + songArtist.getSongTrack());
+//            }
+//        }
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter a song title: ");
-        String title = scanner.nextLine();
-
-        List<SongArtist> songArtists = dataSource.querySongInfoView(title);
-        if (!songArtists.isEmpty()) {
-            for (SongArtist songArtist : songArtists) {
-                System.out.println(songArtist.getArtistName() + ", " + songArtist.getAlbumName() + ", " + songArtist.getSongTrack());
-            }
-        }
+//        dataSource.insertSong("Touch of Grey", "Grateful Dead", "In The Dark", 1);
+        dataSource.insertSong("Like A Rolling Stone", "Bob Dylan", "Bob Dylan's Greatest Hits", 5);
 
 
         dataSource.close();
