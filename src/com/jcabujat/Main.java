@@ -5,6 +5,7 @@ import com.jcabujat.model.DataSource;
 import com.jcabujat.model.SongArtist;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
@@ -43,7 +44,11 @@ public class Main {
 
         dataSource.createArtistSongView();
 
-        List<SongArtist> songArtists = dataSource.querySongInfoView("Funnels");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+
+        List<SongArtist> songArtists = dataSource.querySongInfoView(title);
         if (!songArtists.isEmpty()) {
             for (SongArtist songArtist : songArtists) {
                 System.out.println(songArtist.getArtistName() + ", " + songArtist.getAlbumName() + ", " + songArtist.getSongTrack());

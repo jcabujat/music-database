@@ -34,6 +34,10 @@ public class DataSource {
     public static final int INDEX_SONG_TITLE = 3;
     public static final int INDEX_SONG_ALBUM = 4;
 
+    public enum ORDER_BY {
+        NONE, ASC, DESC
+    }
+
     public static final String QUERY_ALBUMS_BY_ARTIST_START = "SELECT " +
             TABLE_ALBUMS + '.' + COLUMN_ALBUM_NAME + " FROM " + TABLE_ALBUMS + " INNER JOIN " + TABLE_ARTISTS + " ON " +
             TABLE_ALBUMS + '.' + COLUMN_ALBUM_ARTIST + " = " + TABLE_ARTISTS + '.' + COLUMN_ARTIST_ID + " WHERE " +
@@ -72,9 +76,8 @@ public class DataSource {
     public static final String QUERY_SONG_INFO = "SELECT " + COLUMN_ARTIST_NAME + ", " + COLUMN_SONG_ALBUM + ", " +
             COLUMN_SONG_TRACK + " FROM " + VIEW_ARTIST_SONG + " WHERE " + COLUMN_SONG_TITLE + " = \"";
 
-    public enum ORDER_BY {
-        NONE, ASC, DESC
-    }
+    public static final String QUERY_SONG_INFO_PREP = "SELECT " + COLUMN_ARTIST_NAME + ", " + COLUMN_SONG_ALBUM + ", " +
+            COLUMN_SONG_TRACK + " FROM " + VIEW_ARTIST_SONG + " WHERE " + COLUMN_SONG_TITLE + " = ?";
 
 //    public static final int ORDER_BY_NONE = 1;
 //    public static final int ORDER_BY_ASC = 2;
@@ -82,11 +85,12 @@ public class DataSource {
 
 
     private Connection conn;
+    private PreparedStatement querySongInfo;
 
     public boolean open() {
         try {
             conn = DriverManager.getConnection(CONNECTION_STRING);
-            System.out.println(CREATE_ARTIST_SONG_VIEW);
+            querySongInfo = conn.prepareStatement(QUERY_SONG_INFO_PREP);
             return true;
         } catch (SQLException e) {
             System.out.println("Couldn't connect to database: " + e.getMessage());
@@ -97,6 +101,7 @@ public class DataSource {
     public void close() {
         try {
             if (conn != null) {
+                querySongInfo.close();
                 conn.close();
             }
         } catch (SQLException e) {
@@ -258,10 +263,10 @@ public class DataSource {
     }
 
     public List<SongArtist> querySongInfoView(String song) {
-        String sql = QUERY_SONG_INFO + song + "\"";
 
-        try (Statement statement = conn.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+        try  {
+            querySongInfo.setString(1, song);
+            ResultSet resultSet = querySongInfo.executeQuery();
 
             List<SongArtist> songArtists = new ArrayList<>();
             while (resultSet.next()) {
